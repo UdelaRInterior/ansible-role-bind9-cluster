@@ -1,0 +1,95 @@
+---
+# tasks file for udelarinterior.bind9_cluster
+
+- debug: 
+    var: bind9_cluster_zones
+
+- debug: 
+    var: bind9_cluster_hostnames
+  vars:
+   bind9_cluster_hostnames: '{{ bind9_cluster_zones | json_query ( "[].bind9.primary.nameserver.hostname" ) }}'
+
+- debug: 
+    var: bind9_cluster_ns_server_primary_zones
+  vars: 
+    bind9_cluster_ns_server_zones_query: '[?bind9.primary.nameserver.hostname==`{{ inventory_hostname }}`]'
+    bind9_cluster_ns_server_primary_zones: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+
+- name:  building masters's zones for bind9_zones
+  set_fact: 
+    bind9_zones: |
+        {{ bind9_zones | default ([])
+        + ( bind9_cluster_zones | json_query ( bind9_cluster_zone_query ) ) | first
+        | combine ( bind9_cluster_role_config ) 
+        | combine ( bind9_cluster_role_zone ) 
+        | combine ( { "type": "master" } ) 
+        | json_query ( '[@]' )
+        }}
+
+  loop: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+  loop_control:
+    loop_var: zone
+  vars:
+    bind9_cluster_ns_server_zones_query: '[?bind9.primary.nameserver.hostname==`{{ inventory_hostname }}`]'
+    bind9_cluster_zone_query: '[?name==`{{ zone }}`].{name: name }'
+    bind9_cluster_role_config_query: '[?name==`{{ zone }}`].bind9.primary.clauses'
+    bind9_cluster_role_zone_query: '[?name==`{{ zone }}`].zone'
+    bind9_cluster_role_config: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_config_query ) }}'
+    bind9_cluster_role_zone: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_zone_query ) }}'
+
+- name: See variable bind9_zones for called role
+  debug: 
+    var: bind9_zones
+    verbosity: 2
+
+- debug: 
+    var: bind9_cluster_ns_server_slave_zones
+  vars: 
+    bind9_cluster_ns_server_zones_query: '[?contains(bind9.secondaries[].nameserver.hostname,`{{ inventory_hostname }}`)]'
+    bind9_cluster_ns_server_slave_zones: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+
+- name:  building slave zones for bind9_zones
+  set_fact: 
+    bind9_zones: |
+        {{ bind9_zones | default ([])
+        + ( bind9_cluster_zones | json_query ( bind9_cluster_zone_query ) ) | first
+        | combine ( bind9_cluster_role_config ) 
+        | combine ( bind9_cluster_role_zone )
+        | combine( { "role_type": "dynamic" } if bind9_cluster_role_zone | length > 0 else { "role_type": "static" } ) 
+        | combine ( { "type": "slave" } ) 
+        | json_query ( '[@]' ) }}
+
+  loop: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+  loop_control:
+    loop_var: zone
+  vars:
+    bind9_cluster_ns_server_zones_query: '[?contains( bind9.secondaries[].nameserver.hostname, `{{ inventory_hostname }}` )]'
+    bind9_cluster_zone_query: '[?name==`{{ zone }}`].{name: name }'
+#    bind9_cluster_role_config_query: '[?name==`{{ zone }}`].bind9.secondaries[].clauses'
+    bind9_cluster_role_config_query_1: '[?name==`{{ zone }}`].bind9'
+    bind9_cluster_role_config_query_2: '[?namesrver.hostname==`{{ inventory_hostname }}`].clauses'
+    bind9_cluster_role_zone_query: '[?name==`{{ zone }}`].zone'
+    bind9_cluster_role_config: |
+                      {{ bind9_cluster_zones
+                      | json_query ( bind9_cluster_role_config_query_1 )
+                      | json_query ( bind9_cluster_role_config_query_1 ) }}
+    bind9_cluster_role_zone: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_zone_query ) }}'
+
+- name: Las zonas para el rol bind9
+  debug: 
+    var: bind9_zones
+  
+- name: Build bind9_zones_static and bind9_zones_dynamic
+  set_fact: 
+    bind9_zones_static: '{{ bind9_zones | json_query ( "[?role_type==`static`]" ) }}'
+    bind9_zones_dynamic: '{{ bind9_zones | json_query ( "[?role_type==`dynamic`]" ) }}'
+
+- name:  bind9_zones_static 
+  debug:
+    var: bind9_zones_static
+- name:  bind9_zones_dynamic
+  debug:
+    var: bind9_zones_dynamic
+ 
+
+...

@@ -1,0 +1,7 @@
+---
+# defaults file for udelarinterior.bind9_cluster
+
+# The ultimate meta-structure to describe a set of DNS inter zones and their BIND9 configuration
+bind9_cluster_zones: []
+
+...

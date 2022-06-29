@@ -1,0 +1,27 @@
+---
+## Meta information for Ansible Galaxy
+galaxy_info:
+  role_name: bind9_cluster
+  author: Daniel
+  description: Configure a set of BIND9 servers using role systemli.bind9 from a single set of data 
+  company: Red Unidades Informáticas UdelaR Interior (@UdelaRInterior)
+
+  license: GPL-3.0
+
+  min_ansible_version: 2.10
+
+  platforms:
+  - name: Debian
+    versions:
+    - bullseye
+    - buster
+
+  galaxy_tags:
+  - bind9
+  - dns
+  - nameserver
+  - authoritative
+
+dependencies: []
+
+...
