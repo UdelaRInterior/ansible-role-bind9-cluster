@@ -15,6 +15,18 @@
     bind9_cluster_ns_server_zones_query: '[?bind9.primary.nameserver.hostname==`{{ inventory_hostname }}`]'
     bind9_cluster_ns_server_primary_zones: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
 
+- name: checking dynamic or static, por primaries
+  debug: 
+    msg: '{{ { "role_type": "dynamic" } if bind9_cluster_role_zone | length > 0 else { "role_type": "static" } }}'
+
+  loop: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+  loop_control:
+    loop_var: name_current_zone
+  vars:
+    bind9_cluster_ns_server_zones_query: '[?bind9.primary.nameserver.hostname==`{{ inventory_hostname }}`]'
+    bind9_cluster_role_zone_query: '[?name==`{{ name_current_zone }}`].zone'
+    bind9_cluster_role_zone: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_zone_query ) }}'
+
 - name:  building masters's zones for bind9_zones
   set_fact: 
     bind9_zones: |
@@ -28,16 +40,16 @@
 
   loop: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
   loop_control:
-    loop_var: zone
+    loop_var: name_current_zone
   vars:
     bind9_cluster_ns_server_zones_query: '[?bind9.primary.nameserver.hostname==`{{ inventory_hostname }}`]'
-    bind9_cluster_zone_query: '[?name==`{{ zone }}`].{name: name }'
-    bind9_cluster_role_config_query: '[?name==`{{ zone }}`].bind9.primary.clauses'
-    bind9_cluster_role_zone_query: '[?name==`{{ zone }}`].zone'
+    bind9_cluster_zone_query: '[?name==`{{ name_current_zone }}`].{name: name }'
+    bind9_cluster_role_config_query: '[?name==`{{ name_current_zone }}`].bind9.primary.clauses'
+    bind9_cluster_role_zone_query: '[?name==`{{ name_current_zone }}`].zone'
     bind9_cluster_role_config: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_config_query ) }}'
     bind9_cluster_role_zone: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_zone_query ) }}'
 
-- name: See variable bind9_zones for called role
+- name: See ansible_fact bind9_zones being built (with first content for primariy zones)
   debug: 
     var: bind9_zones
     verbosity: 2
@@ -47,6 +59,18 @@
   vars: 
     bind9_cluster_ns_server_zones_query: '[?contains(bind9.secondaries[].nameserver.hostname,`{{ inventory_hostname }}`)]'
     bind9_cluster_ns_server_slave_zones: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+
+- name: checking dynamic or static, for secundaries
+  debug: 
+    msg: '{{ { "role_type": "dynamic" } if bind9_cluster_role_zone | length > 0 else { "role_type": "static" } }}'
+
+  loop: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
+  loop_control:
+    loop_var: name_current_zone
+  vars:
+    bind9_cluster_ns_server_zones_query: '[?contains( bind9.secondaries[].nameserver.hostname, `{{ inventory_hostname }}` )]'
+    bind9_cluster_role_zone_query: '[?name==`{{ name_current_zone }}`].zone'
+    bind9_cluster_role_zone: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_zone_query ) }}'
 
 - name:  building slave zones for bind9_zones
   set_fact: 
@@ -61,23 +85,24 @@
 
   loop: '{{ bind9_cluster_zones | json_query( bind9_cluster_ns_server_zones_query ) | json_query( "[*].name" ) }}'
   loop_control:
-    loop_var: zone
+    loop_var: name_current_zone
   vars:
     bind9_cluster_ns_server_zones_query: '[?contains( bind9.secondaries[].nameserver.hostname, `{{ inventory_hostname }}` )]'
-    bind9_cluster_zone_query: '[?name==`{{ zone }}`].{name: name }'
+    bind9_cluster_zone_query: '[?name==`{{ name_current_zone }}`].{name: name }'
 #    bind9_cluster_role_config_query: '[?name==`{{ zone }}`].bind9.secondaries[].clauses'
-    bind9_cluster_role_config_query_1: '[?name==`{{ zone }}`].bind9'
+    bind9_cluster_role_config_query_1: '[?name==`{{ name_current_zone }}`].bind9'
     bind9_cluster_role_config_query_2: '[?namesrver.hostname==`{{ inventory_hostname }}`].clauses'
-    bind9_cluster_role_zone_query: '[?name==`{{ zone }}`].zone'
+    bind9_cluster_role_zone_query: '[?name==`{{ name_current_zone }}`].zone'
     bind9_cluster_role_config: |
                       {{ bind9_cluster_zones
                       | json_query ( bind9_cluster_role_config_query_1 )
-                      | json_query ( bind9_cluster_role_config_query_1 ) }}
+                      | json_query ( bind9_cluster_role_config_query_2 ) }}
     bind9_cluster_role_zone: '{{ bind9_cluster_zones | json_query ( bind9_cluster_role_zone_query ) }}'
 
-- name: Las zonas para el rol bind9
+- name: The zones' structure for bind9 role
   debug: 
     var: bind9_zones
+    verbosity: 1
   
 - name: Build bind9_zones_static and bind9_zones_dynamic
   set_fact: 
@@ -87,9 +112,22 @@
 - name:  bind9_zones_static 
   debug:
     var: bind9_zones_static
+    verbosity: 2
+
 - name:  bind9_zones_dynamic
   debug:
     var: bind9_zones_dynamic
- 
+    verbosity: 2
+
+- name: playbooks directory
+  debug:
+    msg: '{{ playbook_dir }}'
+
+- name: Build NS servers zone's variables 
+  template:
+    src: bind9_cluster4bind9.yml.j2
+    dest: '{{ bind9_cluster_hostvars_path }}/{{ bind9_cluster4bind9_vars_file }}'
+  delegate_to: localhost
+
 
 ...

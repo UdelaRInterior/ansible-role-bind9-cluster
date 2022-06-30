@@ -4,4 +4,6 @@
 # The ultimate meta-structure to describe a set of DNS inter zones and their BIND9 configuration
 bind9_cluster_zones: []
 
+bind9_cluster_hostvars_path: '{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/vars'
+bind9_cluster4bind9_vars_file: bind9_cluster4bind9.yml
 ...
