@@ -5,5 +5,5 @@
 bind9_cluster_zones: []
 
 bind9_cluster_hostvars_path: '{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/vars'
-bind9_cluster4bind9_vars_file: bind9_cluster4bind9.yml
+bind9_cluster4bind9_zones_vars_file: bind9_cluster4bind9_zones.yml
 ...

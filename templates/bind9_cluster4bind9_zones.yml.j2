@@ -7,9 +7,13 @@
 ####################################################################################
 
 bind9_zones_static: 
+{% filter indent(width=4, first=true) %}
 {{ bind9_zones | json_query ( "[?role_type==`static`]" ) | to_nice_yaml(indent=2) }}
+{% endfilter %}
 
 bind9_zones_dynamic: 
+{% filter indent(width=4, first=true) %}
 {{ bind9_zones | json_query ( "[?role_type==`dynamic`]" ) | to_nice_yaml(indent=2) }}
+{% endfilter %}
 
 ...
