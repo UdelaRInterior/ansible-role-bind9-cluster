@@ -1,15 +1,14 @@
 Ansible role BIND9 cluster
 =========
 
-This role DNS configures a set of BIN9 NS servers as authoritative NS, master or slaves, of the internet DNS zones defined in its variables. 
+This role will help you to build [systemli.bind9](https://galaxy.ansible.com/systemli/bind9) role's coherent configurations for a set of BIN9 NS servers as authoritative NS, master or slaves, for the internet DNS zones defined in its variables. 
 
 Requirements
 ------------
 
-For the configuration of BIND9 in each host as such, this role uses the role [systemli.bind9](https://galaxy.ansible.com/systemli/bind9). 
+For the configuration of BIND9 in each host as such, this role will use the role [systemli.bind9](https://galaxy.ansible.com/systemli/bind9). 
 
-The main task of present role is to build, from the global description of the cluster's zones for each server considered, the content of the variables required by systemli.bind9 role. 
-
+The task of present role is to build, from the global description of the cluster's zones for each server considered, the content of the variables required by systemli.bind9 role. 
 
 Role Variables
 --------------
