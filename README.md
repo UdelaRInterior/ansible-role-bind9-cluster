@@ -1,14 +1,26 @@
 Ansible role BIND9 cluster
 =========
 
-This role will help you to build [systemli.bind9](https://galaxy.ansible.com/systemli/bind9) role's coherent configurations for a set of BIN9 NS servers as authoritative NS, master or slaves, for the internet DNS zones defined in its variables. 
+This role will help you to build [systemli.bind9](https://galaxy.ansible.com/systemli/bind9) role's configuration for a set of BIN9 NS servers, from a single description of the DNS zones data: its definition as well as its configuration in the NS authoritative servers being configured.   
+
+Morover the update of an already deployed DNS zone, the most common process in DNS change management is the deployment of a new zone in a set of authoritative nameservers. We porceed zone by zone, not server by server. With [systemli.bind9](https://galaxy.ansible.com/systemli/bind9) role alone, the deployment of a zone implies the update of as much NS servers' configuration as the zone has NS authoritatives. 
+
+This sister role udelarinterior.bind9_cluster, allows to group the whole configuration of a set of zones deployed in a set of NS servers, the BIN9 cluster, in a single structure variable defiend at the level of the group of the cluster.  
+
+The role just builds, locally in the ansible controller where it is ran, the zone configuration part of the variables for the role [systemli.bind9](https://galaxy.ansible.com/systemli/bind9), that it places in the appropriate host_vars of the NS hosts concerned. 
+
+In fact, the role just provides a unified variables structure for DNS information that is easier to maintain. It could be used with the following schema: 
+* the role is called on the group of NS authoritative servers from a simple playbook, separated from `site.yml`
+* we run this playbook each time we update the DNS data
+* we can inspect the produced systemli.bind9 configuration,
+* we deploy the DNS configuration as usual with our IaC, and we commit the automatically produced configs
 
 Requirements
 ------------
 
-For the configuration of BIND9 in each host as such, this role will use the role [systemli.bind9](https://galaxy.ansible.com/systemli/bind9). 
+For the configuration of BIND9 in each host as such, this role is supposed to be followed by the execution of [systemli.bind9](https://galaxy.ansible.com/systemli/bind9) role to actually deploy built BIND9 configurations. 
 
-The task of present role is to build, from the global description of the cluster's zones for each server considered, the content of the variables required by systemli.bind9 role. It doesn't run any remote task, it just builds locally `systemli.bind9` role's configuration files
+The task of present role is to build, from the global description of the cluster's zones for each server considered, the content of the variables required by systemli.bind9 role. It doesn't run any remote task, it just builds locally `systemli.bind9` role's configuration files. 
 
 Role Variables
 --------------
