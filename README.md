@@ -33,7 +33,7 @@ bind9_cluster_zones:
 - name: my_zone.org
   bind9:
     primary:
-      nameserver:
+    - nameserver:
       clauses:
     secondaries:
     - nameserver:
@@ -62,7 +62,7 @@ bind9_cluster_zones:
 - name: my_zone2.org
   bind9:
     primary:
-      nameserver:
+    - nameserver:
     secondaries:
     - nameserver:
     - nameserver:
@@ -71,7 +71,7 @@ bind9_cluster_zones:
 - name: my_zone.net
   bind9:
     primary:
-      nameserver:
+    - nameserver:
     secondaries:
     - nameserver:
     - nameserver:
@@ -102,7 +102,7 @@ and reference them in the zone's meta structure this way:
 ```yaml
 bind9:
   primary:
-    nameserver: '{{ bind9_cluster_ns_auth_a }}'
+  - nameserver: '{{ bind9_cluster_ns_auth_a }}'
   secondaries:
   - nameserver: '{{ bind9_cluster_ns_auth_b }}'
   - nameserver: '{{ bind9_cluster_ns_auth_c }}'

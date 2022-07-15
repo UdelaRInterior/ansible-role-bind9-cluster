@@ -50,7 +50,7 @@ bind9_cluster_zones: []
 #   # this is for NS servers configuration with role bind9.systemli
 #   bind9:
 #     primary:
-#       nameserver: '{{ bind9_cluster_ns_auth_a }}'
+#     - nameserver: '{{ bind9_cluster_ns_auth_a }}'
 #       clauses:      ## specific bind9 NS configuration trough systemli.bind9 role refactor
 #         notify: master-only
 #         also_notify: '{{ internal_ns.name }}'

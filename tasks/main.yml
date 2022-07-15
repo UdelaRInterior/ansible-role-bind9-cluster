@@ -32,7 +32,7 @@
         {{ bind9_zones | default ([])
         + { "name": current_zone.name } 
         | combine ( { "type": "slave" } ) 
-        | combine ( { "masters": current_zone.bind9.primary.nameserver.name } )
+        | combine ( { "masters": [current_zone.bind9.primary.nameserver.name] } )
         | combine ( current_zone | json_query ( bind9_cluster_secundary_query + ".clauses" ) ) 
         | combine( { "role_type": "dynamic" } 
                       if ( current_zone.zone is defined and current_zone.zone | length > 0 )
