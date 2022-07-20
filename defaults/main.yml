@@ -1,0 +1,119 @@
+---
+# defaults file for udelarinterior.bind9_cluster
+
+## A global definiton of zones, zone by zone, specifiying BIND9 configuration as well as zones' definition
+## The role will decline it NS by NS
+
+# The ultimate meta-structure to describe a set of NS servers with their zones and their BIND9 configuration
+# The natural process is to configure and test your DNS zone by zone, not server by server. 
+# The following structrure, common to all the NS authoritative servers of a set of zones they host (therefore
+# it can be set in group vars), will set, for the mentionned hostnames, a host_vars file appropriate to
+# run systemli.bind9 role on the host, to deploy the authoritative NS of the DNS zones described 
+
+
+
+## The NS servers definition, for masters and ACLs, as well as slaves and all kind of statements and clauses. 
+# bind9_cluster_ns_auth_a:
+  # name: our_first_NS
+  # addresses:
+  # - XXX.YYY.227.8
+  # - 2001:db8:56::8
+  # hostname: nsa.mydomain.uy    # ansible hostname in the IaC inventory
+  # fqdn:                        # if ever the inventory hostname is not the fqdn, if ever we set NS records by default from bind config 
+
+# bind9_cluster_ns_auth_b:
+  # name: our_second_NS
+  # addresses:
+  # - XXX.YYY.245.8
+  # - 2001:db8:aaa::8
+  # hostname: nsb.mydomain.uy    # ansible hostname in the IaC inventory
+
+# bind9_cluster_ns_auth_c:
+  # name: our_second_NS
+  # addresses:
+  # - XXX.YYY.245.88
+  # - 2001:db8:aaa::88
+  # hostname: nsc.mydomain.uy    # ansible hostname in the IaC inventory
+
+# bind9_cluster_ns_auth_internal:
+  # name: internal_ns
+  # addresses:
+  # - 172.16.20.8
+  # - 2001:db8:fff::8
+  # hostname: ns.intranet    # ansible hostname in the IaC inventory
+
+
+bind9_cluster_zones: []
+
+
+# - name: cielito.uy
+#   # this is for NS servers configuration with role bind9.systemli
+#   bind9:
+#     primary:
+#     - nameserver: '{{ bind9_cluster_ns_auth_a }}'
+#       clauses:      ## specific bind9 NS configuration trough systemli.bind9 role refactor
+#         notify: master-only
+#         also_notify: '{{ internal_ns.name }}'
+#     secondaries:
+#     - nameserver: '{{ bind9_cluster_ns_auth_b }}'
+#     - nameserver: '{{ bind9_cluster_ns_auth_C }}'
+#       clauses:
+#   # this is for the dynamic zone definition with role bind9.systemli
+#   zone:
+#     serial: 2022050602
+#     refresh: 1D
+#     retry: 2H
+#     expire: 1000H
+#     minimum: 10M
+#     default_ttl: 10M
+#     primary: nsa.mydomain.uy
+#     admin: postmaster.mydomain.uy
+#     ns_records:
+#     - nsa.mydomain.uy
+#     - nsb.mydomain.uy
+#     - nsc.mydomain.uy
+#     rrs:
+#     - {label: "@", type: MX, rdata: 10 mail.my_mailprovider.com.}
+#     - {label: correo, type: CNAME, rdata: mail.my_mailprovider.com.}
+#     - {label: "@", type: A, rdata: XXX.YYY.98.95}
+#     - {label: "@", type: AAAA, rdata: 2001:1328:6a::95}
+#     - {label: "myserver", type: A, rdata: XXX.YYY.98.95}
+#     - {label: www, type: CNAME, rdata: myserver}
+  
+# - name: cineclub.uy
+#   # this is for NS servers configuration with role bind9.systemli
+#   bind9:
+#     primary:
+#       nameserver: '{{ bind9_cluster_ns_auth_b }}'
+#       clauses:      ## specific bind9 NS configuration trough systemli.bind9 role refactor
+#         notify: master-only
+#     secondaries:
+#     - nameserver: '{{ bind9_cluster_ns_auth_a }}'
+#     - nameserver: '{{ bind9_cluster_ns_auth_C }}'
+#       clauses:
+#   # this is for the dynamic zone definition with role bind9.systemli
+#   zone:
+#     serial: 2022050601
+#     refresh: 1D
+#     retry: 2H
+#     expire: 1000H
+#     minimum: 10M
+#     default_ttl: 10M
+#     primary: nsb.mydomain.uy
+#     admin: postmaster.mydomain.uy
+#     ns_records:
+#     - nsa.mydomain.uy
+#     - nsb.mydomain.uy
+#     - nsc.mydomain.uy
+#     rrs:
+#     - {label: "@", type: MX, rdata: 10 mail.my_mailprovider.com.}
+#     - {label: correo, type: CNAME, rdata: mail.my_mailprovider.com.}
+#     - {label: "@", type: A, rdata: XXX.YYY.98.95}
+#     - {label: "@", type: AAAA, rdata: 2001:1328:6a::95}
+#     - {label: "myserver", type: A, rdata: XXX.YYY.98.95}
+#     - {label: www, type: CNAME, rdata: myserver}
+
+
+bind9_cluster_hostvars_path: '{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/vars'
+bind9_cluster4bind9_zones_vars_file: bind9_cluster4bind9_zones.yml
+...
