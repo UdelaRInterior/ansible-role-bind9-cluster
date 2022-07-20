@@ -110,8 +110,7 @@ bind9:
 
 Those nameserver structures _must_ also be declared in the `bind9_masters` or `bind9_masters_extra` of the role systemli.bind9, to have the appropriate ACLs and masters statement set in BIND9 config. 
 
-The other variables for systemli.bind9 should be defined separately, either in the NS cluster group variables for those they share, either in the host's varialbles if they are specific for each one. Note, however `bind9_slaves` variable becomes unuseful and  `bind9_masters` loose its meaning of "default masters", as in the `bind9_zones_*` that this role produces, primary and secundaries servers are always set, for each and every zone defined. s
-
+The other variables for systemli.bind9 should be defined separately, either in the NS cluster group variables for those they share, either in the host's varialbles if they are specific for each one. Note, however `bind9_slaves` variable becomes unuseful and  `bind9_masters` loose its meaning of "default masters", as in the `bind9_zones_*` that this role produces, primary and secundaries servers are always set, for each and every zone defined.
 
 See [default variables's file](defaults/main.yml) for a detailed description of the role's variable structure. 
 
